@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from fast_zero.database import get_session
 from fast_zero.models import User
@@ -15,17 +15,17 @@ from fast_zero.schemas import (
     UserPublic,
     UserSchema,
 )
-from fast_zero.security import get_current_user
+from fast_zero.security import get_current_user, get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
 
+SessionDep = Annotated[AsyncSession, Depends(get_session)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(
-    user: UserSchema,
-    session: Annotated[Session, Depends(get_session)],
-):
-    db_user = session.scalar(
+async def create_user(user: UserSchema, session: SessionDep):
+    db_user = await session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
         )
@@ -45,35 +45,37 @@ def create_user(
 
     db_user = User(
         username=user.username,
-        password=user.password,
+        password=get_password_hash(user.password),
         email=user.email,
     )
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
     return db_user
 
 
 @router.get('/', response_model=UserList)
-def read_users(
-    session: Annotated[Session, Depends(get_session)],
-    filter_users: Annotated[FilterPage, Query()]
+async def read_users(
+    session: SessionDep,
+    filter_users: Annotated[FilterPage, Query()],
 ):
-    users = session.scalars(
+    query = await session.scalars(
         select(User).offset(filter_users.offset).limit(filter_users.limit)
-    ).all()
+    )
+    users = query.all()
+
     return {'users': users}
 
 
 @router.put('/{user_id}', response_model=UserPublic)
-def update_user(
+async def update_user(
     user_id: int,
     user: UserSchema,
-    session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+    current_user: CurrentUser,
 ):
-    db_user = session.scalar(select(User).where(User.id == user_id))
+    db_user = await session.scalar(select(User).where(User.id == user_id))
     if not db_user:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
@@ -82,10 +84,10 @@ def update_user(
 
     try:
         db_user.username = user.username
-        db_user.password = user.password
+        db_user.password = get_password_hash(user.password)
         db_user.email = user.email
-        session.commit()
-        session.refresh(db_user)
+        await session.commit()
+        await session.refresh(db_user)
 
         return db_user
 
@@ -97,12 +99,12 @@ def update_user(
 
 
 @router.delete('/{user_id}', response_model=Message)
-def delete_user(
+async def delete_user(
     user_id: int,
-    session: Annotated[Session, Depends(get_session)],
-    current_user: Annotated[User, Depends(get_current_user)],
+    session: SessionDep,
+    current_user: CurrentUser,
 ):
-    db_user = session.scalar(select(User).where(User.id == user_id))
+    db_user = await session.scalar(select(User).where(User.id == user_id))
 
     if not db_user:
         raise HTTPException(
@@ -110,7 +112,7 @@ def delete_user(
             detail='User not found',
         )
 
-    session.delete(db_user)
-    session.commit()
+    await session.delete(db_user)
+    await session.commit()
 
     return {'message': 'User deleted'}
