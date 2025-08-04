@@ -1,5 +1,8 @@
 from http import HTTPStatus
 
+import pytest
+
+from fast_zero.models import User
 from fast_zero.schemas import UserPublic
 
 
@@ -86,3 +89,37 @@ def test_delete_user(client, user, token):
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
+
+
+@pytest.mark.asyncio
+async def test_update_user_with_wrong_user(client, user, token, session):
+    other_user = User(
+        username='otheruser',
+        email='otheruser@example.com',
+        password='hashedpassword'
+    )
+    session.add(other_user)
+    await session.commit()
+    await session.refresh(other_user)
+
+    response = client.put(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'username': 'bob',
+            'email': 'bob@example.com',
+            'password': 'mynewpassword',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
+def test_delete_user_wrong_user(client, other_user, token):
+    response = client.delete(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}

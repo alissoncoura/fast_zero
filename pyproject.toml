@@ -29,6 +29,8 @@ pytest-cov = "^6.2.1"
 taskipy = "^1.14.1"
 ruff = "^0.12.1"
 pytest-asyncio = "^1.1.0"
+factory-boy = "^3.3.3"
+freezegun = "^1.5.4"
 
 [tool.ruff]
 line-length = 79
