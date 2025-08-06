@@ -9,11 +9,11 @@ from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 
-from fast_zero.app import app
-from fast_zero.database import get_session
-from fast_zero.models import User, table_registry
-from fast_zero.schemas import UserPublic
-from fast_zero.security import get_password_hash
+from Ccontrol.app import app
+from Ccontrol.database import get_session
+from Ccontrol.models import User, table_registry
+from Ccontrol.schemas import UserPublic
+from Ccontrol.security import get_password_hash
 
 
 class UserFactory(factory.Factory):

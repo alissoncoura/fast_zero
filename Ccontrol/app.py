@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from fast_zero.routers import auth, todos, users
+from Ccontrol.routers import auth, todos, users
 
 app = FastAPI()
 

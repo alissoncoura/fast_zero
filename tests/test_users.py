@@ -2,8 +2,8 @@ from http import HTTPStatus
 
 import pytest
 
-from fast_zero.models import User
-from fast_zero.schemas import UserPublic
+from Ccontrol.models import User
+from Ccontrol.schemas import UserPublic
 
 
 def test_create_user(client):

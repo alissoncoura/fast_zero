@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from fast_zero.models import TodoState
+from Ccontrol.models import TodoState
 
 
 class Message(BaseModel):

@@ -3,7 +3,7 @@ from http import HTTPStatus
 import factory.fuzzy
 import pytest
 
-from fast_zero.models import Todo, TodoState
+from Ccontrol.models import Todo, TodoState
 
 
 def test_create_todo(client, token):

@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from fast_zero.models import table_registry
-from fast_zero.settings import Settings
+from Ccontrol.models import table_registry
+from Ccontrol.settings import Settings
 
 config = context.config
 config.set_main_option('sqlalchemy.url', Settings().DATABASE_URL)

@@ -9,9 +9,9 @@ from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fast_zero.database import get_session
-from fast_zero.models import User
-from fast_zero.settings import Settings
+from Ccontrol.database import get_session
+from Ccontrol.models import User
+from Ccontrol.settings import Settings
 
 settings = Settings()
 
